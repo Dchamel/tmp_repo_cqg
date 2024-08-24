@@ -19,31 +19,39 @@ def working_time_prec(prec=2):
 def data_console_output(data_final: list[str]) -> None:
     """Print list of the data to console string by string"""
     for line in data_final:
-        print(line)
+        print(line[1])
 
 
 # @working_time_prec(6)  # for dev only
-def string_handler(rules_list: list[str], data_list: list[str]) -> list[str]:
+def string_handler(rules_list: list[str], data_list: list[str]) -> list[[int, str]]:
     """
     Strings handler.
     Takes rules list: list[str] and data_list: list[str]
     And changes data according to their rules
-    Output: list of operated strings
+    Output: list of operated & sorted strings by desc and quantity of changes
     p.s Works with small files
     """
-    data_final = []
-    for data_line in data_list:
+
+    outer_data = tuple()
+    for i, data_line in enumerate(data_list):
+        no_of_changes = 0
         for rule in rules_list:
-            value_to_replace = rule.split('=')[0]
-            value_for_replace = rule.split('=')[1]
-
+            value_to_replace, value_for_replace = rule.split('=')
+            no_of_changes += data_line.count(value_to_replace)
             data_line = data_line.replace(value_to_replace, value_for_replace)
-        data_final.append(data_line)
-
-    return data_final
+        outer_data += ([no_of_changes, data_line],)
+    # sorting by descending from the most changed line
+    outer_data = sorted(outer_data, key=lambda x: x, reverse=True)
+    return outer_data
 
 
 def open_files(rules_cfg: str, data_txt: str) -> tuple[list[str], list[str]]:
+    """
+    Function for reading data from files
+    Input: Path to the files as strings
+    Output: tuple of lists with data from files
+    p.s Works with small files
+    """
     with open(rules_cfg, 'r') as f:
         rules_list = f.read().splitlines()
 
@@ -57,7 +65,9 @@ def start_processing() -> None:
     """Start processing of the file"""
 
     # for dev only
-    # string_handler('rules.cfg', 'text.txt')
+    # data_list, rules_list = open_files('rules.cfg', 'text.txt')
+    # data_final = string_handler(rules_list, data_list)
+    # data_console_output(data_final)
 
     try:
         if not argv[1].endswith('.cfg') or not argv[2].endswith('.txt'):
